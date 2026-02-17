@@ -954,10 +954,10 @@ function generate(){
 
   const labelW = Number(document.getElementById("labelW").value) || 50;
   const labelH = Number(document.getElementById("labelH").value) || 30;
-  const smallLabelW = Number(document.getElementById("smallLabelW").value) || 40;
-  const smallLabelH = Number(document.getElementById("smallLabelH").value) || 22;
-  const smallBoxW = Number(document.getElementById("smallBoxW").value) || 42;
-  const smallBoxH = Number(document.getElementById("smallBoxH").value) || 24;
+  const smallLabelW = Number(document.getElementById("smallLabelW").value) || 30;
+  const smallLabelH = Number(document.getElementById("smallLabelH").value) || 7;
+  const smallBoxW = Number(document.getElementById("smallBoxW").value) || 30;
+  const smallBoxH = Number(document.getElementById("smallBoxH").value) || 10;
   const smallCopies = Math.max(1, Math.min(50, Math.floor(Number(document.getElementById("smallCopies").value) || 1)));
   const smallBorder = Number(document.getElementById("smallBorder").value) || 0.3;
   const margin = Number(document.getElementById("pageMargin").value) || 8;
