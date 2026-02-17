@@ -29,3 +29,26 @@ Web app to generate printable A4 product labels with IMEI barcode/QR support.
 - Barcode format is `CODE128` (suitable for IMEI labels).
 - `Installation Date` is intentionally blank on generated labels.
 - If you need model auto-format like `Prefix + last 6 digits`, update `main.js`.
+
+## Changes Made
+
+- Added clearer user instructions in `README.md`.
+- Added `.gitignore` for OS, logs, build output, env files, dependencies, and IDE temp files.
+- Separated UI sections in `index.html` with light background and top/bottom borders:
+  - `Big Label Section`
+  - `Small Label`
+  - `IMEI Input`
+  - `Label Elements`
+- Updated combo print behavior in `main.js`:
+  - Uses same-page free space for small labels when possible.
+  - Checks right-side space first, then bottom space.
+  - Avoids stacking multiple small labels inside one empty big-label cell.
+- Added `Copy` option for small labels (`smallCopies`):
+  - Works in `Small` mode and `Combo` mode.
+  - Prints multiple small-label copies per IMEI as configured.
+- Updated default small-label settings:
+  - Small code width: `30`
+  - Small code height: `7`
+  - Small border box width: `30`
+  - Small border box height: `10`
+  - Copy: `1`
