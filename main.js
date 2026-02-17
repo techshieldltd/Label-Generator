@@ -328,6 +328,221 @@ function applyPrintPageSize(orientation){
   styleEl.textContent = `@media print{ @page{ size: ${pageSize}; margin: 0; } }`;
 }
 
+function renderSheets({ preview, imeis, itemW, itemH, margin, gap, orientation, makeItem }){
+  const { cols, perPage } = computeGridConfig(itemW, itemH, margin, gap, orientation);
+
+  let index = 0;
+  while(index < imeis.length){
+    const sheet = document.createElement("div");
+    sheet.className = "sheet";
+
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    grid.style.gridTemplateColumns = `repeat(${cols}, ${mm(itemW)})`;
+
+    const end = Math.min(index + perPage, imeis.length);
+    for(let i = index; i < end; i++){
+      grid.appendChild(makeItem(imeis[i]));
+    }
+
+    sheet.appendChild(grid);
+    preview.appendChild(sheet);
+    index = end;
+  }
+}
+
+function createGridElement(cols, itemW){
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  grid.style.gridTemplateColumns = `repeat(${cols}, ${mm(itemW)})`;
+  return grid;
+}
+
+function renderComboSheets({
+  preview,
+  imeis,
+  labelW,
+  labelH,
+  smallBoxW,
+  smallItemH,
+  margin,
+  gap,
+  orientation,
+  smallCopies,
+  makeBigItem,
+  makeSmallItem
+}){
+  const bigCfg = computeGridConfig(labelW, labelH, margin, gap, orientation);
+  const smallCfg = computeGridConfig(smallBoxW, smallItemH, margin, gap, orientation);
+  const bigPerPage = bigCfg.perPage;
+  // Use at most one small label in each empty big-label cell to keep combo layout predictable.
+  const smallPerBigCell = smallItemH <= labelH ? 1 : 0;
+  const bigAreaW = (bigCfg.cols * labelW) + Math.max(0, (bigCfg.cols - 1) * gap);
+  const sideStripW = Math.max(0, bigCfg.usableW - bigAreaW);
+  const sideCols = Math.max(0, Math.floor((sideStripW + gap) / (smallBoxW + gap)));
+  const smallQueue = [];
+  let bigIndex = 0;
+
+  while(bigIndex < imeis.length || smallQueue.length > 0){
+    const sheet = document.createElement("div");
+    sheet.className = "sheet";
+
+    const block = document.createElement("div");
+    block.style.display = "flex";
+    block.style.flexDirection = "column";
+    block.style.height = "100%";
+    block.style.boxSizing = "border-box";
+
+    const remainingBig = imeis.length - bigIndex;
+    const bigCount = Math.min(bigPerPage, Math.max(0, remainingBig));
+    let smallCount = 0;
+    let usedHeight = 0;
+
+    if(bigCount > 0){
+      const topRow = document.createElement("div");
+      topRow.style.display = "flex";
+      topRow.style.alignItems = "flex-start";
+      topRow.style.gap = mm(gap);
+      topRow.style.width = "100%";
+
+      const leftBlock = document.createElement("div");
+      leftBlock.style.width = mm(bigAreaW);
+      leftBlock.style.boxSizing = "border-box";
+
+      const fullBigRows = Math.floor(bigCount / bigCfg.cols);
+      const partialBigCount = bigCount % bigCfg.cols;
+      const fullBigCount = fullBigRows * bigCfg.cols;
+      let bigHeightUsed = 0;
+
+      if(fullBigCount > 0){
+        const bigGrid = createGridElement(bigCfg.cols, labelW);
+        bigGrid.style.height = "auto";
+        const endFull = bigIndex + fullBigCount;
+        for(let i = bigIndex; i < endFull; i++){
+          const imei = imeis[i];
+          bigGrid.appendChild(makeBigItem(imei));
+          for(let c = 0; c < smallCopies; c++){
+            smallQueue.push(imei);
+          }
+        }
+        leftBlock.appendChild(bigGrid);
+        bigIndex = endFull;
+      }
+
+      if(partialBigCount > 0){
+        const mixedRow = createGridElement(bigCfg.cols, labelW);
+        mixedRow.style.height = "auto";
+        if(fullBigRows > 0){
+          mixedRow.style.marginTop = mm(gap);
+        }
+
+        const endPartial = bigIndex + partialBigCount;
+        for(let i = bigIndex; i < endPartial; i++){
+          const imei = imeis[i];
+          mixedRow.appendChild(makeBigItem(imei));
+          for(let c = 0; c < smallCopies; c++){
+            smallQueue.push(imei);
+          }
+        }
+
+        const emptyCells = bigCfg.cols - partialBigCount;
+        for(let c = 0; c < emptyCells; c++){
+          const filler = document.createElement("div");
+          filler.style.height = mm(labelH);
+          filler.style.boxSizing = "border-box";
+          filler.style.display = "flex";
+          filler.style.flexDirection = "column";
+          filler.style.alignItems = "center";
+          filler.style.justifyContent = "flex-start";
+
+          const fitInCell = Math.min(smallPerBigCell, smallQueue.length);
+          for(let s = 0; s < fitInCell; s++){
+            const imei = smallQueue.shift();
+            const smallLabel = makeSmallItem(imei);
+            if(s > 0){
+              smallLabel.style.marginTop = mm(gap);
+            }
+            filler.appendChild(smallLabel);
+            smallCount += 1;
+          }
+
+          mixedRow.appendChild(filler);
+        }
+
+        leftBlock.appendChild(mixedRow);
+        bigIndex = endPartial;
+      }
+
+      const bigRowsUsed = fullBigRows + (partialBigCount > 0 ? 1 : 0);
+      bigHeightUsed = (bigRowsUsed * labelH) + Math.max(0, (bigRowsUsed - 1) * gap);
+
+      topRow.appendChild(leftBlock);
+
+      let sideHeightUsed = 0;
+      if(sideCols > 0 && smallQueue.length > 0){
+        const sideRowsAvailable = Math.max(0, Math.floor((bigCfg.usableH + gap) / (smallItemH + gap)));
+        const sideCapacity = sideCols * sideRowsAvailable;
+        const sideCount = Math.min(sideCapacity, smallQueue.length);
+
+        if(sideCount > 0){
+          const sideGrid = createGridElement(sideCols, smallBoxW);
+          sideGrid.style.width = mm(sideStripW);
+          sideGrid.style.height = "auto";
+
+          for(let i = 0; i < sideCount; i++){
+            const imei = smallQueue.shift();
+            sideGrid.appendChild(makeSmallItem(imei));
+          }
+
+          topRow.appendChild(sideGrid);
+          smallCount += sideCount;
+
+          const sideRowsUsed = Math.ceil(sideCount / sideCols);
+          sideHeightUsed = (sideRowsUsed * smallItemH) + Math.max(0, (sideRowsUsed - 1) * gap);
+        }
+      }
+
+      block.appendChild(topRow);
+      usedHeight = Math.max(bigHeightUsed, sideHeightUsed);
+    }
+
+    // After using the right strip first, use any remaining bottom space.
+    const separatorGap = (bigCount > 0 && smallQueue.length > 0) ? gap : 0;
+    let remainingHeight = bigCfg.usableH - usedHeight - separatorGap;
+    let smallRowsAvailable = Math.max(0, Math.floor((remainingHeight + gap) / (smallItemH + gap)));
+
+    // Prevent deadlock on very tight custom dimensions.
+    if(smallRowsAvailable === 0 && smallQueue.length > 0 && bigCount === 0){
+      smallRowsAvailable = 1;
+    }
+
+    const smallCapacity = smallRowsAvailable * smallCfg.cols;
+    const smallBottomCount = Math.min(smallCapacity, smallQueue.length);
+
+    if(smallBottomCount > 0){
+      const smallGrid = createGridElement(smallCfg.cols, smallBoxW);
+      smallGrid.style.height = "auto";
+      if(separatorGap > 0){
+        smallGrid.style.marginTop = mm(separatorGap);
+      }
+
+      for(let i = 0; i < smallBottomCount; i++){
+        const imei = smallQueue.shift();
+        smallGrid.appendChild(makeSmallItem(imei));
+      }
+      block.appendChild(smallGrid);
+      smallCount += smallBottomCount;
+    }
+
+    if(bigCount === 0 && smallCount === 0){
+      break;
+    }
+
+    sheet.appendChild(block);
+    preview.appendChild(sheet);
+  }
+}
+
 function renderFallbackLogo(logoContainer){
   logoContainer.innerHTML = BUILTIN_LOGO_SVG;
 }
@@ -743,6 +958,7 @@ function generate(){
   const smallLabelH = Number(document.getElementById("smallLabelH").value) || 22;
   const smallBoxW = Number(document.getElementById("smallBoxW").value) || 42;
   const smallBoxH = Number(document.getElementById("smallBoxH").value) || 24;
+  const smallCopies = Math.max(1, Math.min(50, Math.floor(Number(document.getElementById("smallCopies").value) || 1)));
   const smallBorder = Number(document.getElementById("smallBorder").value) || 0.3;
   const margin = Number(document.getElementById("pageMargin").value) || 8;
   const gap = Number(document.getElementById("gap").value) || 3.5;
@@ -754,6 +970,7 @@ function generate(){
 
   const imeiRaw = document.getElementById("imeis").value;
   const imeis = parseImeis(imeiRaw).map(sanitizeImei).filter(Boolean);
+  const smallImeis = imeis.flatMap((imei) => Array.from({ length: smallCopies }, () => imei));
 
   const preview = document.getElementById("preview");
   preview.innerHTML = "";
@@ -782,89 +999,81 @@ function generate(){
   });
   applyPrintPageSize(orientation);
 
-  const comboGap = Math.max(0.5, Math.min(3, labelScale));
   const smallTextExtra = 4;
-  let itemW = labelW;
-  let itemH = labelH;
   if(labelMode === "small"){
-    itemW = smallBoxW;
-    itemH = smallBoxH + smallTextExtra;
+    renderSheets({
+      preview,
+      imeis: smallImeis,
+      itemW: smallBoxW,
+      itemH: smallBoxH + smallTextExtra,
+      margin,
+      gap,
+      orientation,
+      makeItem: (imei) => makeSmallLabelElement({
+        imei,
+        modelName,
+        smallTextMode,
+        smallCodeMode,
+        smallLabelW,
+        smallLabelH
+      })
+    });
   }else if(labelMode === "combo"){
-    itemW = Math.max(labelW, smallBoxW);
-    itemH = labelH + comboGap + smallBoxH + smallTextExtra;
-  }
-
-  const { cols, perPage } = computeGridConfig(itemW, itemH, margin, gap, orientation);
-
-  // Create sheets (pages)
-  let index = 0;
-  while(index < imeis.length){
-    const sheet = document.createElement("div");
-    sheet.className = "sheet";
-
-    const grid = document.createElement("div");
-    grid.className = "grid";
-    grid.style.gridTemplateColumns = `repeat(${cols}, ${mm(itemW)})`;
-
-    const end = Math.min(index + perPage, imeis.length);
-    for(let i=index; i<end; i++){
-      const imei = imeis[i];
-      if(labelMode === "small"){
-        const smallLabel = makeSmallLabelElement({
-          imei,
-          modelName,
-          smallTextMode,
-          smallCodeMode,
-          smallLabelW,
-          smallLabelH
-        });
-        grid.appendChild(smallLabel);
-      }else if(labelMode === "combo"){
-        const comboItem = document.createElement("div");
-        comboItem.className = "comboItem";
-        const bigLabel = makeLabelElement({
-          manufacturer,
-          warranty,
-          website,
-          logoFileName,
-          logoFileName2,
-          modelName,
-          imei,
-          codeMode,
-          labelScale,
-          visibility
-        });
-        const smallLabel = makeSmallLabelElement({
-          imei,
-          modelName,
-          smallTextMode,
-          smallCodeMode,
-          smallLabelW,
-          smallLabelH
-        });
-        comboItem.appendChild(bigLabel);
-        comboItem.appendChild(smallLabel);
-        grid.appendChild(comboItem);
-      }else{
-        const label = makeLabelElement({
-          manufacturer,
-          warranty,
-          website,
-          logoFileName,
-          logoFileName2,
-          modelName,
-          imei,
-          codeMode,
-          labelScale,
-          visibility
-        });
-        grid.appendChild(label);
-      }
-    }
-
-    sheet.appendChild(grid);
-    preview.appendChild(sheet);
-    index = end;
+    // Keep small labels on the same sheet under big labels when space is available.
+    renderComboSheets({
+      preview,
+      imeis,
+      labelW,
+      labelH,
+      smallBoxW,
+      smallItemH: smallBoxH + smallTextExtra,
+      margin,
+      gap,
+      orientation,
+      smallCopies,
+      makeBigItem: (imei) => makeLabelElement({
+        manufacturer,
+        warranty,
+        website,
+        logoFileName,
+        logoFileName2,
+        modelName,
+        imei,
+        codeMode,
+        labelScale,
+        visibility
+      }),
+      makeSmallItem: (imei) => makeSmallLabelElement({
+        imei,
+        modelName,
+        smallTextMode,
+        smallCodeMode,
+        smallLabelW,
+        smallLabelH
+      })
+    });
+  }else{
+    renderSheets({
+      preview,
+      imeis,
+      itemW: labelW,
+      itemH: labelH,
+      margin,
+      gap,
+      orientation,
+      makeItem: (imei) => makeLabelElement({
+        manufacturer,
+        warranty,
+        website,
+        logoFileName,
+        logoFileName2,
+        modelName,
+        imei,
+        codeMode,
+        labelScale,
+        visibility
+      })
+    });
   }
 }
 

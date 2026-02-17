@@ -30,125 +30,129 @@
     <div class="panel">
       <h2>Label Generator</h2>
 
-      <div class="field">
-        <label>Label mode</label>
-        <select id="labelMode">
-          <option value="big" selected>Big label</option>
-          <option value="small">Small label</option>
-          <option value="combo">Combo</option>
-        </select>
-      </div>
+      <div class="configSection configSectionBig">
+        <h3>Big Label Section</h3>
 
-      <div class="row">
         <div class="field">
-          <label>Manufacturer name</label>
-          <input id="manufacturer" type="text" value="Tech Shield LTD" />
-        </div>
-        <div class="field">
-          <label>Warranty period</label>
-          <select id="warranty">
-            <option value="3 Months">3 Months</option>
-            <option value="6 Months" selected>6 Months</option>
-            <option value="9 Months">9 Months</option>
-            <option value="12 Months">12 Months</option>
+          <label>Label mode</label>
+          <select id="labelMode">
+            <option value="big" selected>Big label</option>
+            <option value="small">Small label</option>
+            <option value="combo">Combo</option>
           </select>
         </div>
-      </div>
 
-      <div class="row">
-        <div class="field">
-          <label>Label width (mm)</label>
-          <input id="labelW" type="number" min="10" step="0.1" value="65" />
+        <div class="row">
+          <div class="field">
+            <label>Manufacturer name</label>
+            <input id="manufacturer" type="text" value="Tech Shield LTD" />
+          </div>
+          <div class="field">
+            <label>Warranty period</label>
+            <select id="warranty">
+              <option value="3 Months">3 Months</option>
+              <option value="6 Months" selected>6 Months</option>
+              <option value="9 Months">9 Months</option>
+              <option value="12 Months">12 Months</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <label>Label height (mm)</label>
-          <input id="labelH" type="number" min="10" step="0.1" value="50" />
-        </div>
-      </div>
 
-      <div class="row">
+        <div class="row">
+          <div class="field">
+            <label>Label width (mm)</label>
+            <input id="labelW" type="number" min="10" step="0.1" value="65" />
+          </div>
+          <div class="field">
+            <label>Label height (mm)</label>
+            <input id="labelH" type="number" min="10" step="0.1" value="50" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Model</label>
+            <select id="modelName">
+              <option value="VLock">VLock</option>
+              <option value="VLock Pro" selected>VLock Pro</option>
+              <option value="VLock Ultra">VLock Ultra</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Page margin (mm)</label>
+            <input id="pageMargin" type="number" min="0" step="0.1" value="8" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Gap between labels (mm)</label>
+            <input id="gap" type="number" min="0" step="0.1" value="3.5" />
+          </div>
+          <div class="field">
+            <label>Border thickness (mm)</label>
+            <input id="border" type="number" min="0" step="0.1" value="0.6" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Website</label>
+            <input id="website" type="text" value="www.techshieldbd.com" />
+          </div>
+          <div class="field">
+            <label>Main logo (from img folder)</label>
+            <select id="logoFile"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Top-right logo (from img folder)</label>
+            <select id="logoFile2"></select>
+          </div>
+          <div class="field">
+            <label>Page orientation</label>
+            <select id="pageOrientation">
+              <option value="portrait" selected>Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Logo 1 size (mm)</label>
+            <input id="logo1Size" type="number" min="1" step="0.1" value="12" />
+          </div>
+          <div class="field">
+            <label>Logo 2 size (mm)</label>
+            <input id="logo2Size" type="number" min="1" step="0.1" value="25" />
+          </div>
+        </div>
+
         <div class="field">
-          <label>Model</label>
-          <select id="modelName">
-            <option value="VLock">VLock</option>
-            <option value="VLock Pro" selected>VLock Pro</option>
-            <option value="VLock Ultra">VLock Ultra</option>
+          <label>Code display</label>
+          <select id="codeMode">
+            <option value="both">Barcode + QR</option>
+            <option value="barcode" selected>Barcode only</option>
+            <option value="qr">QR only</option>
           </select>
         </div>
-        <div class="field">
-          <label>Page margin (mm)</label>
-          <input id="pageMargin" type="number" min="0" step="0.1" value="8" />
+
+        <div class="row">
+          <div class="field">
+            <label>Manufacturer text size</label>
+            <input id="manufacturerTextScale" type="number" min="0.6" max="2" step="0.05" value="1.3" />
+          </div>
+          <div class="field">
+            <label>Other text size (except IMEI)</label>
+            <input id="otherTextScale" type="number" min="0.6" max="2" step="0.05" value="1.2" />
+          </div>
         </div>
       </div>
 
-      <div class="row">
-        <div class="field">
-          <label>Gap between labels (mm)</label>
-          <input id="gap" type="number" min="0" step="0.1" value="3.5" />
-        </div>
-        <div class="field">
-          <label>Border thickness (mm)</label>
-          <input id="border" type="number" min="0" step="0.1" value="0.6" />
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="field">
-          <label>Website</label>
-          <input id="website" type="text" value="www.techshieldbd.com" />
-        </div>
-        <div class="field">
-          <label>Main logo (from img folder)</label>
-          <select id="logoFile"></select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="field">
-          <label>Top-right logo (from img folder)</label>
-          <select id="logoFile2"></select>
-        </div>
-        <div class="field">
-          <label>Page orientation</label>
-          <select id="pageOrientation">
-            <option value="portrait" selected>Portrait</option>
-            <option value="landscape">Landscape</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="field">
-          <label>Logo 1 size (mm)</label>
-          <input id="logo1Size" type="number" min="1" step="0.1" value="12" />
-        </div>
-        <div class="field">
-          <label>Logo 2 size (mm)</label>
-          <input id="logo2Size" type="number" min="1" step="0.1" value="25" />
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Code display</label>
-        <select id="codeMode">
-          <option value="both">Barcode + QR</option>
-          <option value="barcode" selected>Barcode only</option>
-          <option value="qr">QR only</option>
-        </select>
-      </div>
-
-      <div class="row">
-        <div class="field">
-          <label>Manufacturer text size</label>
-          <input id="manufacturerTextScale" type="number" min="0.6" max="2" step="0.05" value="1.3" />
-        </div>
-        <div class="field">
-          <label>Other text size (except IMEI)</label>
-          <input id="otherTextScale" type="number" min="0.6" max="2" step="0.05" value="1.2" />
-        </div>
-      </div>
-
-      <div class="smallLabelSection">
+      <div class="smallLabelSection configSection">
         <h3>Small Label</h3>
         <div class="row">
           <div class="field">
@@ -191,12 +195,19 @@
             <label>Small border box height (mm)</label>
             <input id="smallBoxH" type="number" min="8" step="0.1" value="24" />
           </div>
+          <div class="field">
+            <label>Copy</label>
+            <input id="smallCopies" type="number" min="1" step="1" value="1" />
+          </div>
         </div>
       </div>
 
-      <div class="field">
-        <label>IMEIs (comma or newline separated)</label>
-        <textarea id="imeis">864866058852483, 864866058852491, 864866058852509</textarea>
+      <div class="configSection imeiSection">
+        <h3>IMEI Input</h3>
+        <div class="field">
+          <label>IMEIs (comma or newline separated)</label>
+          <textarea id="imeis">864866058852483, 864866058852491, 864866058852509</textarea>
+        </div>
       </div>
 
       <div class="hint">
@@ -209,7 +220,7 @@
         </ul>
       </div>
 
-      <div class="elementToggles">
+      <div class="elementToggles configSection">
         <h3>Label Elements</h3>
         <label><input type="checkbox" class="elementToggle" id="showMainLogo" checked /> Main logo</label>
         <label><input type="checkbox" class="elementToggle" id="showTopRightLogo" checked /> Top-right logo</label>
