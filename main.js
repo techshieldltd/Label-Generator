@@ -256,7 +256,8 @@ function setCssVars({
   logo1Size,
   logo2Size,
   manufacturerTextScale,
-  otherTextScale
+  otherTextScale,
+  smallTextScale
 }){
   const { pageW, pageH } = getPageDimensions(orientation);
   const baseScale = Math.min(labelW / 50, labelH / 30);
@@ -267,7 +268,8 @@ function setCssVars({
   const mmScaled = (base) => mm((base * labelScale).toFixed(2));
   const mmSmallScaled = (base) => mm((base * smallScale).toFixed(2));
   const fontPx = Math.max(6.4, Math.min(14.5, 11.5 * labelScale));
-  const smallFontPx = Math.max(6, Math.min(12, 8.5 * smallScale));
+  const smallTextScaleClamped = Math.max(0.6, Math.min(4, Number(smallTextScale) || 4.0));
+  const smallFontPx = Math.max(6, Math.min(20, 8.5 * smallScale * smallTextScaleClamped));
   const mfgScale = Math.max(0.6, Math.min(2, Number(manufacturerTextScale) || 1.3));
   const otherScale = Math.max(0.6, Math.min(2, Number(otherTextScale) || 1.2));
   const mfgFontPx = Math.max(7, Math.min(28, (fontPx + 2) * mfgScale));
@@ -857,6 +859,19 @@ function makeSmallLabelElement({ imei, modelName, smallTextMode, smallCodeMode, 
   text.className = "smallCodeText";
   text.textContent = textValue;
 
+  const tooltip = document.createElement("span");
+  tooltip.className = "copyTooltip";
+  tooltip.textContent = "Copied!";
+  text.appendChild(tooltip);
+
+  text.title = "Click to copy";
+  text.addEventListener("click", () => {
+    navigator.clipboard.writeText(textValue).then(() => {
+      text.classList.add("copied");
+      setTimeout(() => text.classList.remove("copied"), 1200);
+    });
+  });
+
   content.appendChild(codeBlock);
   content.appendChild(text);
   smallLabel.appendChild(content);
@@ -954,10 +969,10 @@ function generate(){
 
   const labelW = Number(document.getElementById("labelW").value) || 50;
   const labelH = Number(document.getElementById("labelH").value) || 30;
-  const smallLabelW = Number(document.getElementById("smallLabelW").value) || 30;
-  const smallLabelH = Number(document.getElementById("smallLabelH").value) || 7;
-  const smallBoxW = Number(document.getElementById("smallBoxW").value) || 30;
-  const smallBoxH = Number(document.getElementById("smallBoxH").value) || 10;
+  const smallLabelW = Number(document.getElementById("smallLabelW").value) || 55;
+  const smallLabelH = Number(document.getElementById("smallLabelH").value) || 10;
+  const smallBoxW = Number(document.getElementById("smallBoxW").value) || 57;
+  const smallBoxH = Number(document.getElementById("smallBoxH").value) || 15;
   const smallCopies = Math.max(1, Math.min(50, Math.floor(Number(document.getElementById("smallCopies").value) || 1)));
   const smallBorder = Number(document.getElementById("smallBorder").value) || 0.3;
   const margin = Number(document.getElementById("pageMargin").value) || 8;
@@ -967,6 +982,7 @@ function generate(){
   const logo2Size = Number(document.getElementById("logo2Size").value) || 25;
   const manufacturerTextScale = Number(document.getElementById("manufacturerTextScale").value) || 1.3;
   const otherTextScale = Number(document.getElementById("otherTextScale").value) || 1.2;
+  const smallTextScale = Number(document.getElementById("smallTextScale").value) || 2.0;
 
   const imeiRaw = document.getElementById("imeis").value;
   const imeis = parseImeis(imeiRaw).map(sanitizeImei).filter(Boolean);
@@ -995,7 +1011,8 @@ function generate(){
     logo1Size,
     logo2Size,
     manufacturerTextScale,
-    otherTextScale
+    otherTextScale,
+    smallTextScale
   });
   applyPrintPageSize(orientation);
 
